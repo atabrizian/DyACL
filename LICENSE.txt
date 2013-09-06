@@ -1,0 +1,2 @@
+This  code is distributed uner GNU GPL license (http://www.gnu.org/licenses/gpl.html)
+so feel free to use it.
