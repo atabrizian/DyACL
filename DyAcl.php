@@ -172,19 +172,18 @@ class DyAcl
      * @param string $privilege ALLOW and DENY are only possible values
      * @param string $action Action will be set to 'all' by default but other
      * possible actions are Create, Read, Update, Delete and any other action that
-     * @return bool true on success and false if the resource does not exist
      */
     public function setRule($resource, $privilege, $action = 'all')
     {
-        if ($this->hasResource($resource)) {
-            if (!isset($this->rules[$resource][$action])) {
-                $this->rules[$resource][$action] = $privilege;
-            } else {
-                $this->rules[$resource][$action] = $this->permissionOr($this->rules[$resource][$action], $privilege);
-            }
-            return true;
+        if (!$this->hasResource($resource)) {
+            $this->addResource($resource);
         }
-        return false;
+
+        if (!isset($this->rules[$resource][$action])) {
+            $this->rules[$resource][$action] = $privilege;
+        } else {
+            $this->rules[$resource][$action] = $this->permissionOr($this->rules[$resource][$action], $privilege);
+        }
     }
 
     /**
