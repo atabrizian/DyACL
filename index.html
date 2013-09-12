@@ -1,1 +1,177 @@
-My GitHub Page
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>DyACL by ghost098</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>DyACL</h1>
+          <h2>A Database deriven ACL</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/ghost098/DyACL/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/ghost098/DyACL/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/ghost098/DyACL" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="dyacl" class="anchor" href="#dyacl"><span class="octicon octicon-link"></span></a>DyACL</h1>
+
+<h1></h1>
+
+<p>This is a really simple implementation of ACL.</p>
+
+<h3>
+<a name="definitions" class="anchor" href="#definitions"><span class="octicon octicon-link"></span></a>DEFINITIONS:</h3>
+
+<p><strong>Visitor</strong>: Somebody who visits a page in your website.</p>
+
+<p><strong>User</strong>: A visitor who is a member of your website.</p>
+
+<p><strong>Role</strong>: A role of a visitor in your website. Roles are known as groups of users.</p>
+
+<p><strong>Resource</strong>: What ever stuff in your website that a permission can be applied to.
+It can be a controller, method in your controller, special function, a file, a directory,
+and etc.</p>
+
+<p><strong>Action</strong>: An action is the way a visitor accesses a part of your site it can include Create,Read (View), Update , Delete or anything else.</p>
+
+<p><strong>Rule</strong>: A rule about who can access what and how.</p>
+
+<p>I've put a sample sql file named "DyACL.sql" in this repository to show you how to arrange
+these thing in your database.</p>
+
+<p><strong>Remember</strong> that this library does need just an array of anything so you're not forced to use
+database. You can put your roles, resources, etc in a file or an array and give that to the
+library. Rules also can be loaded from database or even created on fly.</p>
+
+<h3>
+<a name="how-it-works" class="anchor" href="#how-it-works"><span class="octicon octicon-link"></span></a>HOW IT WORKS:</h3>
+
+<ol>
+<li>Library should be loaded whether by including it into the file or with help from
+composer.</li>
+<li>Find out who is visiting your website. Each and every user even a guest should have an
+ID that will help you differenciate one from another.</li>
+<li>Every user has at least one role and as many roles you desire is possible. Roles are
+different according to each site. It can be as simple as "Administrator, manager, user" or
+it can be as complex as roles are defined by administrator on fly. But it makes no
+difference because you store these in "roles" table and when you find out what is your
+users ID it's as easy as a simple database query. Selected the roles from database define
+theme for library by "setRoles" function:</li>
+</ol><pre><code>$roles = array(); // here assign what you selected from "roles" table
+
+$dyacl = new DyACL();
+$dyacl-&gt;setRoles($roles);
+</code></pre>
+
+<p>if there is an special role that you desire to be added on fly add it by "setRole" function.
+For example you have a role named "admin" and you want to assign it to this user:</p>
+
+<pre><code>$dyacl-&gt;setRole("admin");
+</code></pre>
+
+<ol>
+<li>When you have a list of current user's roles you can select these roles' "Rules" from
+it's table. After that define these rules for the library by "setRules" function.</li>
+</ol><pre><code>$rules = array();// here assign the rules you selected from database.
+
+$dyacl-&gt;setRules($rules);
+</code></pre>
+
+<p>The library will define every resource that is mentioned by rules for itself so you do
+not need to define any resources. Access to a resource that is unknown for the library
+would be denied by default. In case you need to define any rule on fly go on and use
+"setRule" function. Each "rule" consists of a "resource" name, a "privilege", for which
+the possible values are 'allow' and 'deny', and finally an "action" which is by default
+"all" which means user is allowed to do whatever is possible or you can assign an
+action such as "view",
+For example you want to deny any access to a folder named "secrets":</p>
+
+<pre><code>$dyacl-&gt;setRule("secrets", DyACL::DENY);
+</code></pre>
+
+<p>or you want to allow all access but deleting:</p>
+
+<pre><code>$dyacl-&gt;setRule("secrets", DyACL::ALLOW);
+$dyacl-&gt;setRule("secrets", DyACL::DENY, "delete");
+</code></pre>
+
+<p>or you want to deny all but viewing:</p>
+
+<pre><code>$dyacl-&gt;setRule("secrets", DyACL::DENY);
+$dyacl-&gt;setRule("secrets", DyACL::ALLOW, "view");
+</code></pre>
+
+<p>Remeber that DyACL::DENY is equal to "deny" and DyACL::ALLOW is equal to "allow".</p>
+
+<ol>
+<li>Finally checking whether user has access to a resource or not is possible by "isAllowed"
+function:
+For example after all this you want to check whether allow access to the folder "secrets"
+or not:</li>
+</ol><pre><code>if ($dyacl-&gt;isAllowed("secrets") {
+    echo "Yes, you are allowed";
+}
+else {
+    echo "Access Denied!";
+}
+</code></pre>
+
+<p>OR maybe you want to check whether the user is allowed to delete the folder "secrets":</p>
+
+<pre><code>if ($dyacl-&gt;isAllowed("secrets", "delete") {
+    echo "Yes, you are allowed";
+}
+else {
+    echo "Access Denied!";
+}
+</code></pre>
+
+<h3>
+<a name="a-complete-sample" class="anchor" href="#a-complete-sample"><span class="octicon octicon-link"></span></a>A COMPLETE SAMPLE:</h3>
+
+<pre><code>coming soon...
+</code></pre>
+
+<h3>
+<a name="faq" class="anchor" href="#faq"><span class="octicon octicon-link"></span></a>FAQ:</h3>
+
+<p>-Q: What happens if a "role" denies access to a resource but another one allows it?</p>
+
+<p>-A: The result will be "allow".</p>
+
+<p>-Q: Do I need to define each and every resource?!</p>
+
+<p>-A: NO. There may be lots of resources defined in your database. Loading all that can
+use lots of memory or may be impossible for large projects. You just load specific rules
+that are related to current user and the library will handle all the rest.</p>
+        </section>
+
+        <footer>
+          DyACL is maintained by <a href="https://github.com/ghost098">ghost098</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
