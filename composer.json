@@ -1,0 +1,13 @@
+{
+    "name": "DyACL",
+    "description": "DyACL is a dynamic implementation of ACL",
+    "authors": [
+        {
+            "name": "Arash Tabriziyan",
+            "email": "a.tabriziyan@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    }
+}
