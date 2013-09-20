@@ -128,7 +128,7 @@ class DyAcl
     /**
      * Assign a new role to current user
      *
-     * @param string $role The role of the user
+     * @param int|string $role The role of the user
      * @return bool true on success and false on repeated role
      */
     public function setRole($role)
@@ -218,6 +218,15 @@ class DyAcl
             return true;
         }
         return false;
+    }
+
+    /**
+     * Get all rules that are set
+     *
+     * @return array|null an array of rules or null if nothing is set.
+     */
+    public function getRules() {
+        return $this->rules;
     }
 
     /**
