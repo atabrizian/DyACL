@@ -34,12 +34,12 @@ class DyAclPDO extends DyAcl
 
     public function prepareAcl($user_id)
     {
-        $ph = $this->pdo->prepare("SELECT * FROM `users_roles` WHERE `user_id` = :user_id;");
+        $ph = $this->pdo->prepare("SELECT `role_id` FROM `users_roles` WHERE `user_id` = :user_id;");
         if($ph->execute(array(':user_id' => $user_id))) {
-            $roles = $ph->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 1);
+            $roles = $ph->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 'role_id');
+            $ph->closeCursor();
 
             if($roles !== false) {
-//                parent::setRoles($roles);
                 $this->setRoles($roles);
 
                 foreach($roles as $role) {
@@ -47,9 +47,9 @@ class DyAclPDO extends DyAcl
 
                     if($ph->execute(array(':role_id'=> $role))) {
                         $rules = $ph->fetchAll(PDO::FETCH_ASSOC);
+                        $ph->closeCursor();
 
                         if($rules !== false) {
-//                            parent::setRules($rules);
                             $this->setRules($rules);
                         }
                         else {

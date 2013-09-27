@@ -43,6 +43,19 @@ class DyAcl
      */
     const DENY = 'deny';
 
+    const ACTION_ALL = 'all';
+    const ACTION_CREATE = 'create';
+    const ACTION_READ = 'read';
+    const ACTION_UPDATE = 'update';
+    const ACTION_DELETE = 'delete';
+
+    private $allPossibleActions = array(
+        self::ACTION_CREATE,
+        self::ACTION_READ,
+        self::ACTION_UPDATE,
+        self::ACTION_DELETE
+    );
+
     /**
      * A collection of current user's roles
      *
@@ -66,6 +79,8 @@ class DyAcl
      * @var array null
      */
     private $rules = null;
+
+    private $rulesByRole = null;
 
     /**
      * Checks whether the resource is currently registered or not
@@ -92,9 +107,14 @@ class DyAcl
     {
         if (!$this->hasResource($resource)) {
             $this->resources[] = $resource;
-            return true;
         }
-        return false;
+    }
+
+    public function addResources($resources)
+    {
+        foreach ($resources as $resource) {
+            $this->addResource($resource);
+        }
     }
 
     /**
@@ -106,9 +126,14 @@ class DyAcl
      * possible actions are Create, Read, Update, Delete and any other action that
      * you mention!
      */
-    public function allow($resource, $action = 'all')
+    public function allow($resource, $action = null)
     {
         $this->setRule($resource, $action, self::ALLOW);
+    }
+
+    public function forceAllow($resource, $action = null)
+    {
+        $this->setForceRule($resource, $action, self::ALLOW);
     }
 
     /**
@@ -120,9 +145,14 @@ class DyAcl
      * possible actions are Create, Read, Update, Delete and any other action that
      * you mention!
      */
-    public function deny($resource, $action = null)
+//    public function deny($resource, $action = null)
+//    {
+//        $this->setRule($resource, $action, self::DENY);
+//    }
+
+    public function forceDeny($resource, $action = null)
     {
-        $this->setRule($resource, $action, self::DENY);
+        $this->setForceRule($resource, $action, self::DENY);
     }
 
     /**
@@ -150,13 +180,9 @@ class DyAcl
     {
         if (is_array($roles)) {
             foreach ($roles as $role) {
-                if(!$this->hasRole($role)) {
-                    $this->roles[] = $role;
-                }
+                $this->setRole($role);
             }
-            return true;
         }
-        return false;
     }
 
     /**
@@ -165,8 +191,9 @@ class DyAcl
      * @param string $role A specific role
      * @return bool
      */
-    public function hasRole($role) {
-        return (isset($this->roles[$role]))?true:false;
+    public function hasRole($role)
+    {
+        return (isset($this->roles[$role])) ? true : false;
     }
 
     /**
@@ -188,16 +215,45 @@ class DyAcl
      * @param string $action Action will be set to 'all' by default but other
      * possible actions are Create, Read, Update, Delete and any other action that
      */
-    public function setRule($resource, $privilege, $action = 'all')
+    public function setRule($resource, $privilege, $action = self::ACTION_ALL)
     {
         if (!$this->hasResource($resource)) {
             $this->addResource($resource);
         }
 
-        if (!isset($this->rules[$resource][$action])) {
-            $this->rules[$resource][$action] = $privilege;
+        if ($action == self::ACTION_ALL) {
+            foreach ($this->allPossibleActions as $action) {
+                if (!isset($this->rules[$resource][$action])) {
+                    $this->rules[$resource][$action] = $privilege;
+                } else {
+                    $this->rules[$resource][$action] = $this->permissionAnd(
+                        $this->rules[$resource][$action],
+                        $privilege
+                    );
+                }
+            }
         } else {
-            $this->rules[$resource][$action] = $this->permissionOr($this->rules[$resource][$action], $privilege);
+            if (!isset($this->rules[$resource][$action])) {
+                $this->rules[$resource][$action] = $privilege;
+            } else {
+                $this->rules[$resource][$action] = $this->permissionAnd($this->rules[$resource][$action], $privilege);
+            }
+        }
+
+    }
+
+    public function setForceRule($resource, $privilege, $action = self::ACTION_ALL)
+    {
+        if (!$this->hasResource($resource)) {
+            $this->addResource($resource);
+        }
+
+        if ($action == self::ACTION_ALL) {
+            foreach ($this->allPossibleActions as $action) {
+                $this->rules[$resource][$action] = $privilege;
+            }
+        } else {
+            $this->rules[$resource][$action] = $privilege;
         }
     }
 
@@ -220,12 +276,24 @@ class DyAcl
         return false;
     }
 
+    public function setForceRules($rules)
+    {
+        if (is_array($rules)) {
+            foreach ($rules as $rule) {
+                $this->setForceRule($rule['resource'], $rule['privilege'], $rule['action']);
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Get all rules that are set
      *
      * @return array|null an array of rules or null if nothing is set.
      */
-    public function getRules() {
+    public function getRules()
+    {
         return $this->rules;
     }
 
@@ -238,9 +306,20 @@ class DyAcl
      * possible actions are Create, Read, Update, Delete and any other action that
      * @return bool true if allowed and false if denied
      */
-    public function isAllowed($resource, $action = 'all')
+    public function isAllowed($resource, $action = self::ACTION_ALL)
     {
-        return ((isset($this->rules[$resource][$action]) and (($this->rules[$resource]['all'] === 'allow') or ($this->rules[$resource][$action] === 'allow'))) ? true : false);
+        if($action == self::ACTION_ALL) {
+            foreach($this->allPossibleActions as $action) {
+                if($this->rules[$resource][$action] !== self::ALLOW) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else {
+            return ((isset($this->rules[$resource][$action]) and $this->rules[$resource][$action] === 'allow') ? true : false);
+        }
+
     }
 
     /**
@@ -253,11 +332,11 @@ class DyAcl
      * @param string $B allow or deny
      * @return string allow or deny
      */
-    private function permissionOr($A, $B)
+    private function permissionAnd($A, $B)
     {
-        $X = ($A === 'allow') ? 1 : 0;
-        $Y = ($B === 'allow') ? 1 : 0;
+        $X = ($A === self::ALLOW) ? 1 : 0;
+        $Y = ($B === self::ALLOW) ? 1 : 0;
 
-        return (($X | $Y) == 1) ? 'allow' : 'deny';
+        return (($X & $Y) == 1) ? 'allow' : 'deny';
     }
 }
