@@ -34,6 +34,7 @@ class DyAclPDO extends DyAcl
 
     public function prepareAcl($user_id)
     {
+        $this->flush();
         $ph = $this->pdo->prepare("SELECT `role_id` FROM `users_roles` WHERE `user_id` = :user_id;");
         if($ph->execute(array(':user_id' => $user_id))) {
             $roles = $ph->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 'role_id');
@@ -70,5 +71,40 @@ class DyAclPDO extends DyAcl
         else {
             throw new \Exception("Role selection failed!");
         }
+    }
+
+    public function addResourceToDB()
+    {
+
+    }
+
+    public function addUserRoleToDB()
+    {
+
+    }
+
+    public function addRuleToDB()
+    {
+
+    }
+
+    public function removeResourceFromDB()
+    {
+
+    }
+
+    public function removeUserRoleFromDB()
+    {
+
+    }
+
+    public function removeRuleFromDB()
+    {
+
+    }
+
+    public function updateRuleInDB()
+    {
+
     }
 }

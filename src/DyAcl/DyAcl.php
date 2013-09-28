@@ -80,7 +80,23 @@ class DyAcl
      */
     private $rules = null;
 
-    private $rulesByRole = null;
+    /**
+     * Just flush everything
+     */
+    protected function __construct()
+    {
+        $this->flush();
+    }
+
+    /**
+     * Resets main variables to null
+     */
+    public function flush()
+    {
+        $this->roles = null;
+        $this->resources = null;
+        $this->rules = null;
+    }
 
     /**
      * Checks whether the resource is currently registered or not
@@ -97,6 +113,8 @@ class DyAcl
 
     /**
      * Adds a resource to the collection
+     * You do not need to define any resource explicitely they will be added
+     * when you set rules
      *
      * @param string $resource A resource which can be anything that we need to
      * manage our users access to such as controller/method, file, directory, etc
@@ -110,6 +128,11 @@ class DyAcl
         }
     }
 
+    /**
+     * Batch version of addResource
+     *
+     * @param array $resources An array of resources
+     */
     public function addResources($resources)
     {
         foreach ($resources as $resource) {
@@ -131,25 +154,37 @@ class DyAcl
         $this->setRule($resource, $action, self::ALLOW);
     }
 
+    /**
+     * Forces allow on a resource. and doesnot pay attention to current state
+     *
+     * @param $resource
+     * @param null $action
+     */
     public function forceAllow($resource, $action = null)
     {
         $this->setForceRule($resource, $action, self::ALLOW);
     }
 
     /**
-     * Deny access to specific resource on all or specific action
-     *
-     * @param string $resource A resource which can be anything that we need to
-     * manage our users access to such as controller/method, file, directory, etc
-     * @param string $action Action will be set to 'all' by default but other
-     * possible actions are Create, Read, Update, Delete and any other action that
-     * you mention!
+     * DO NOT USE IT!
+     * This is just for your information!
      */
-//    public function deny($resource, $action = null)
-//    {
-//        $this->setRule($resource, $action, self::DENY);
-//    }
+    public function deny()
+    {
+        throw new \Exception("You should not deny anything! Nothing is allowed except you
+            allow it. but if you need to force deny on a rule (e.g. Nobody should access specific
+            resource or specific action on spicific resource) you can use 'forceDeny' function
+            .");
+    }
 
+    /**
+     * Forces deny on specific resource
+     * When somebody receives forceDeny there is no way for him/her to access that resource
+     * even if he/she is a member of the most powerfull group such as admin
+     *
+     * @param $resource A resource
+     * @param null $action One or all of possible actions
+     */
     public function forceDeny($resource, $action = null)
     {
         $this->setForceRule($resource, $action, self::DENY);
@@ -208,12 +243,14 @@ class DyAcl
 
     /**
      * Set an access rule
+     * Just one importent thing is All access is denied by default so you do not need to
+     * deny anything all other things are simple
      *
      * @param string $resource A resource which can be anything that we need to
      * manage our users access to such as controller/method, file, directory, etc
      * @param string $privilege ALLOW and DENY are only possible values
      * @param string $action Action will be set to 'all' by default but other
-     * possible actions are Create, Read, Update, Delete and any other action that
+     * possible actions are Create, Read, Update, Delete
      */
     public function setRule($resource, $privilege, $action = self::ACTION_ALL)
     {
@@ -242,6 +279,13 @@ class DyAcl
 
     }
 
+    /**
+     * Forces a rule on a resource
+     *
+     * @param string $resource A resource
+     * @param string $privilege ALLOW or DENY
+     * @param string $action One of create, read, update, delete or all
+     */
     public function setForceRule($resource, $privilege, $action = self::ACTION_ALL)
     {
         if (!$this->hasResource($resource)) {
@@ -276,15 +320,19 @@ class DyAcl
         return false;
     }
 
+    /**
+     * Batch setForceRule
+     *
+     * @param array $rules
+     * @return bool
+     */
     public function setForceRules($rules)
     {
         if (is_array($rules)) {
             foreach ($rules as $rule) {
                 $this->setForceRule($rule['resource'], $rule['privilege'], $rule['action']);
             }
-            return true;
         }
-        return false;
     }
 
     /**
@@ -308,25 +356,21 @@ class DyAcl
      */
     public function isAllowed($resource, $action = self::ACTION_ALL)
     {
-        if($action == self::ACTION_ALL) {
-            foreach($this->allPossibleActions as $action) {
-                if($this->rules[$resource][$action] !== self::ALLOW) {
+        if ($action == self::ACTION_ALL) {
+            foreach ($this->allPossibleActions as $action) {
+                if ($this->rules[$resource][$action] !== self::ALLOW) {
                     return false;
                 }
             }
             return true;
-        }
-        else {
+        } else {
             return ((isset($this->rules[$resource][$action]) and $this->rules[$resource][$action] === 'allow') ? true : false);
         }
 
     }
 
     /**
-     * A utility function that ORs two different privilege which can be allow or deny
-     * If two different rules are available for a user the generous one is effective!
-     * For example if one rule allows a resource and another rule denies that
-     * specific resource the result is 'allow'
+     * A utility function that Ands two different privilege which can be allow or deny
      *
      * @param string $A allow or deny
      * @param string $B allow or deny
