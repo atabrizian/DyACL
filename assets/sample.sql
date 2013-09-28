@@ -3,9 +3,9 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 20, 2013 at 05:51 PM
+-- Generation Time: Sep 28, 2013 at 10:14 PM
 -- Server version: 5.5.32-MariaDB-log
--- PHP Version: 5.5.3
+-- PHP Version: 5.5.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -45,7 +45,7 @@ INSERT INTO `roles` (`id`, `name`, `active`) VALUES
 INSERT INTO `roles_resources` (`id`, `role_id`, `resource`, `action`, `privilege`) VALUES
 (1, 2, 'public', 'all', 'allow'),
 (2, 2, 'secret', 'all', 'deny'),
-(3, 2, 'user_can_only_view', 'view', 'allow'),
+(3, 2, 'user_can_only_read', 'read', 'allow'),
 (4, 2, 'user_can_not_delete', 'all', 'allow'),
 (5, 2, 'user_can_not_delete', 'delete', 'deny'),
 (6, 1, 'secret', 'all', 'allow');
