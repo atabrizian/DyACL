@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.6
+-- version 4.0.7
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Oct 07, 2013 at 07:29 PM
+-- Generation Time: Oct 11, 2013 at 07:00 PM
 -- Server version: 5.5.32-MariaDB-log
 -- PHP Version: 5.5.4
 
@@ -46,9 +46,10 @@ INSERT INTO `roles_resources` (`id`, `role_id`, `resource`, `action`, `privilege
 (1, 2, 'public', 'all', 'allow'),
 (2, 2, 'secret', 'all', 'deny'),
 (3, 2, 'user_can_only_read', 'read', 'allow'),
-(4, 2, 'user_can_not_delete', 'all', 'allow'),
-(5, 2, 'user_can_not_delete', 'delete', 'deny'),
-(6, 1, 'secret', 'all', 'allow');
+(4, 2, 'user_can_not_delete', 'read', 'allow'),
+(5, 2, 'user_can_not_delete', 'create', 'allow'),
+(7, 1, 'secret', 'all', 'allow'),
+(6, 2, 'user_can_not_delete', 'update', 'allow');
 
 --
 -- Dumping data for table `users`
