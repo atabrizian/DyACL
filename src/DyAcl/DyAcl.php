@@ -61,7 +61,7 @@ class DyAcl
      *
      * @var array null
      */
-    private $roles = null;
+    protected $roles = null;
 
     /**
      * A collection of resources
@@ -83,7 +83,7 @@ class DyAcl
     /**
      * Just flush everything
      */
-    protected function __construct()
+    public function __construct()
     {
         $this->flush();
     }
@@ -146,48 +146,45 @@ class DyAcl
      * @param string $resource A resource which can be anything that we need to
      * manage our users access to such as controller/method, file, directory, etc
      * @param string $action Action will be set to 'all' by default but other
-     * possible actions are Create, Read, Update, Delete and any other action that
-     * you mention!
+     * possible actions are Create, Read, Update, Delete
      */
-    public function allow($resource, $action = null)
+    public function allow($resource, $action = self::ACTION_ALL)
     {
-        $this->setRule($resource, $action, self::ALLOW);
+        $this->setRule($resource, self::ALLOW, $action);
     }
 
     /**
      * Forces allow on a resource. and doesnot pay attention to current state
      *
      * @param $resource
-     * @param null $action
+     * @param null|string $action
      */
-    public function forceAllow($resource, $action = null)
+    public function forceAllow($resource, $action = self::ACTION_ALL)
     {
         $this->setForceRule($resource, $action, self::ALLOW);
     }
 
     /**
-     * DO NOT USE IT!
-     * This is just for your information!
+     * This is just to be used to revoke permission because every permission is denied by
+     * default.
      */
-    public function deny()
+    public function deny($resource, $action = self::ACTION_ALL)
     {
-        throw new \Exception("You should not deny anything! Nothing is allowed except you
-            allow it. but if you need to force deny on a rule (e.g. Nobody should access specific
-            resource or specific action on spicific resource) you can use 'forceDeny' function
-            .");
+        $this->setRule($resource, self::DENY, $action);
     }
 
     /**
      * Forces deny on specific resource
-     * When somebody receives forceDeny there is no way for him/her to access that resource
-     * even if he/she is a member of the most powerfull group such as admin
+     * Deny access whether it is allowed right now or not. This function is needed because
+     * allow is more powerful than deny and if you have previously allowed a resource, your
+     * deny wont affect users permission, or you need to force den on it.
      *
      * @param $resource A resource
-     * @param null $action One or all of possible actions
+     * @param null|string $action One or all of possible actions
      */
-    public function forceDeny($resource, $action = null)
+    public function forceDeny($resource, $action = self::ACTION_ALL)
     {
-        $this->setForceRule($resource, $action, self::DENY);
+        $this->setForceRule($resource, self::DENY, $action);
     }
 
     /**
@@ -263,7 +260,7 @@ class DyAcl
                 if (!isset($this->rules[$resource][$action])) {
                     $this->rules[$resource][$action] = $privilege;
                 } else {
-                    $this->rules[$resource][$action] = $this->permissionAnd(
+                    $this->rules[$resource][$action] = $this->permissionOr(
                         $this->rules[$resource][$action],
                         $privilege
                     );
@@ -273,7 +270,7 @@ class DyAcl
             if (!isset($this->rules[$resource][$action])) {
                 $this->rules[$resource][$action] = $privilege;
             } else {
-                $this->rules[$resource][$action] = $this->permissionAnd($this->rules[$resource][$action], $privilege);
+                $this->rules[$resource][$action] = $this->permissionOr($this->rules[$resource][$action], $privilege);
             }
         }
 
@@ -357,16 +354,29 @@ class DyAcl
     public function isAllowed($resource, $action = self::ACTION_ALL)
     {
         if ($action == self::ACTION_ALL) {
+            $return = true;
             foreach ($this->allPossibleActions as $action) {
-                if ($this->rules[$resource][$action] !== self::ALLOW) {
-                    return false;
+                if (!isset($this->rules[$resource][$action]) or (isset($this->rules[$resource][$action]) and $this->rules[$resource][$action] !== self::ALLOW)) {
+                    $return = false;
+                    break;
                 }
             }
-            return true;
+            return $return;
         } else {
             return ((isset($this->rules[$resource][$action]) and $this->rules[$resource][$action] === 'allow') ? true : false);
         }
 
+    }
+
+    public function deleteRole($role)
+    {
+        $temp = $this->roles;
+        $this->roles = array();
+        foreach ($temp as $tmpRole) {
+            if ($tmpRole != $role) {
+                $this->roles[] = $tmpRole;
+            }
+        }
     }
 
     /**
@@ -376,11 +386,11 @@ class DyAcl
      * @param string $B allow or deny
      * @return string allow or deny
      */
-    private function permissionAnd($A, $B)
+    private function permissionOr($A, $B)
     {
         $X = ($A === self::ALLOW) ? 1 : 0;
         $Y = ($B === self::ALLOW) ? 1 : 0;
 
-        return (($X & $Y) == 1) ? 'allow' : 'deny';
+        return (($X | $Y) == 1) ? 'allow' : 'deny';
     }
 }
