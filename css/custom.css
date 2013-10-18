@@ -27,23 +27,24 @@ body {
     color: #006699;
 }
 
-.navbar {
-    background-color: #1897d2;
+/*.navbar {*/
+    /*background-color: #1897d2;*/
+    /*color: #ffffff;*/
+/*}*/
+
+
+.navbar a, .navbar a:active {
     color: #ffffff;
 }
 
-
-#topmenu li a {
-    color: #ffffff;
+.navbar-nav .nav-divider {
+    background-color: #ffffff;
 }
 
 .container {
     text-align: justify;
 }
 
-.text-info {
-    color: #868a85;
-}
 
 .box {
     border: 1px solid #bbbbbb;
