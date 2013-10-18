@@ -16,14 +16,14 @@
 <body>
 <div class="navbar navbar-default navbar-fixed-top">
     <!--<div class="navbar-inner">-->
-        <div class="container">
-            <button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <!--<a href="#" class="navbar-brand">DyACL</a>-->
-            <div class="collapse navbar-collapse navHeaderCollapse">
+    <div class="container">
+        <button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <!--<a href="#" class="navbar-brand">DyACL</a>-->
+        <div class="collapse navbar-collapse navHeaderCollapse">
             <ul class="nav navbar-nav">
                 <li><a href="#description">Description</a></li>
                 <li class="nav-divider"></li>
@@ -43,8 +43,8 @@
                 <li><a href="https://github.com/ghost098/DyACL/archive/master.zip">Download DyAcl .Zip</a>
                 </li>
             </ul>
-            </div>
         </div>
+    </div>
     <!--</div>-->
 </div>
 <div class="container">
@@ -68,8 +68,8 @@
         </ul>
     </div>
 </div>
-<div class="box">
-    <div class="h3"><a name="description">Description</a></div>
+<div class="box" id="description">
+    <div class="h3">Description</div>
     <div>
         This is a really lightweight implementation of ACL. It can be used both for static and
         dynamic (Database Driven) ACL which was the main purpose of this library's
@@ -96,8 +96,8 @@
         extends from DyAcl and Uses "PDO" to load data from database.
     </div>
 </div>
-<div class="box">
-    <div class="h3"><a name="definitions">Definitions</a></div>
+<div class="box" id="definitions">
+    <div class="h3">Definitions</div>
     <div>
         <b>Visitor:</b> Somebody who visits a page in your website.
         <br>
@@ -117,8 +117,8 @@
         <br>
     </div>
 </div>
-<div class="box">
-    <div class="h3"><a name="code">How it works</a></div>
+<div class="box" id="code">
+    <div class="h3">How it works</div>
     <div>
         1. This library should be loaded from namespace context. You can load it by
         using composer. If you are using lower versions of php which does not support
@@ -235,15 +235,15 @@
 </pre>
     </div>
 </div>
-<div class="box">
-    <div class="h3"><a name="sample">A Complete Sample</a></div>
+<div class="box" id="sample">
+    <div class="h3">A Complete Sample</div>
 
     I have provided a sample file in DyAcl repo. I have also written some Unit Tests,
     taking a look at them may clear context of using this library.
 </div>
 <div class="box">
-    <div class="h3"><a name="why">Why to choose &quot;DyACL&quot; over &quot;Zend
-        Permission ACL&quot;?</a></div>
+    <div class="h3" id="why">Why to choose &quot;DyACL&quot; over &quot;Zend
+        Permission ACL&quot;?</div>
 
     I guess this topic would be interesting for whom has already used &quot;Zend Permission
     ACL&quot; or other ACL libraries. What follows is what I found out by testing
@@ -315,8 +315,8 @@
 
 
 </div>
-<div class="box">
-    <div class="h3"><a name="others">Other Stuff</a></div>
+<div class="box" id="others">
+    <div class="h3">Other Stuff</div>
     <b>I will provide plugins for known php frameworks (Symphony2, CodeIgniter, Lithium,
         Silex, etc) ASAP.</b><br> You can clone this library
     <a href="https://github.com/ghost098/DyACL.git">here</a>. Also you can download this library in zip format from
@@ -325,8 +325,8 @@
     <br>
     Finally, if you enjoyed this library go on and support it by starring it on github.
 </div>
-<div class="box">
-    <div class="h3"><a name="faq">FAQ</a></div>
+<div class="box" id="faq">
+    <div class="h3">FAQ</div>
     <div>
         -Q: What happens if a "role" denies access to a resource but another one allows it?
         <br>
@@ -342,5 +342,19 @@
     </div>
 </div>
 </div>
+<script>
+    $(document).ready(function(){
+        $('a[href^="#"]').on('click',function (e) {
+            e.preventDefault();
+
+            var target = this.hash,
+                    $target = $(target);
+
+            $('html, body').stop().animate({
+                'scrollTop': ($target.offset().top - 90)
+            }, 1200);
+        });
+    });
+</script>
 </body>
 </html>
