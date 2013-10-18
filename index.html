@@ -19,6 +19,8 @@
         <li><a href="#sample">A Complete Sample</a></li>
         <li><a href="#others">Other Stuff</a></li>
         <li><a href="#faq">FAQ</a></li>
+        <li><a class="btn" href="https://github.com/ghost098/DyACL.git">Clone DyAcl</a></li>
+        <li><a class="btn" href="https://github.com/ghost098/DyACL/archive/master.zip">Download DyAcl .Zip</a></li>
     </ul>
 </div>
 <div class="container">
@@ -58,6 +60,11 @@
             time, so I decided to write an ACL library myself and after some improvements I
             believe its better than "Zend Permission ACL"! So here is my library. I will shed
             some light on "Why this library is better than Zend ACL" later on.
+            <br>
+            <br>
+            If you're curious why I named it &quot;DyAcl&quot;, I should say it's abbreviation of
+            &quot;Damn You ACL&quot;, because I had some difficulty understanding the
+            ACL implementation process! :) Now it is &quot;Dynamic ACL&quot;!
             <br>
             <br>
             <b>Remember</b> that this library does need just an array of anything so you're
@@ -206,15 +213,87 @@
     </div>
     <div class="box">
         <div class="h3"><a name="sample">A Complete Sample</a></div>
+
+        I have provided a sample file in DyAcl repo. I have also written some Unit Tests,
+        taking a look at them may clear context of using this library.
     </div>
     <div class="box">
-        <div class="h3"><a name="why">Why to choose &quot;DyACL&quot; over &quot;Zend Permission ACL&quot;?</a></div>
+        <div class="h3"><a name="why">Why to choose &quot;DyACL&quot; over &quot;Zend
+            Permission ACL&quot;?</a></div>
+
+        I guess this topic would be interesting for whom has already used &quot;Zend Permission
+        ACL&quot; or other ACL libraries. What follows is what I found out by testing
+        &quot;Zend Permission ACL&quot;, if you can prove they're wrong, let me know And I
+        will correct.<br><br>
+
+        <ol>
+           <li>Explicit Resource and role Definition<br><br> In &quot;Zend
+               Permission ACL&quot; roles should be defined explicitly and in order to define
+               resource specific rules, resources should be defined previously. It means you should
+               define all resources in a database table load them and add them to &quot;Zend
+               Permission ACL&quot; and always maintain this table for extra resources or resources
+               that do not exist anymore. What if you don't? The library will throw an Exception
+               saying the resource has not been defined. This really complicates situation and is not
+               memory efficient. But in DyAcl library itself adds resources whenever you define Rules.</li>
+            <br>
+            <li>Rule Definition Context<br><br>We know that for each resource all possible actions
+                are Create, Read, Update and Delete (CRUD). In &quot;Zend Permission ACL&quot;
+            When you do not provide &quot;Privilege&quot; for your rule, it assumes you
+            mean every possible action, and when you are using &quot;isAllowed&quot;
+            function with no privilege specified it checks for this rule. But imagine you have
+            a user who is a member of 4 different groups and each one of these groups
+            have a privilege for one specific action. when you ask &quot;Zend Permission ACL&quot;
+            that if this user is allowed for all actions with leaving privilege parameter null in
+                &quot;isAllowed&quot; function Zend says NO, means user is not allowed!!!
+                So what to do? you have to define 4 different rules for each resource and
+                check each rule separately to get the correct result which will cause a huge
+                rule table and huge <b>memory usage</b> will follow.<br>I've solved
+            this in DyAcl. "all" keyword allows or denies access on all possible actions and
+            you can check all access with the keyword "all" too. so its easy as pie!</li>
+            <br>
+            <li>Order in &quot;Allow&quot; and &quot;Deny&quot;!!!<br><br>
+                In &quot;Zend Permission ACL&quot; Rule definition order is important! Means
+                when you have two rules for one resource which one denies access and the other
+                allows it, the result will be different depending on which one is loaded first!
+                In &quot;DyAcl&quot; allow is more powerful, and by default everything
+                is denied, so you just need to allow access to specific resources and order of rules
+                does not matter anymore.
+            </li>
+            <br>
+            <li>Execution time<br><br>Because of differences in rule definition context between
+                &quot;Zend Permission ACL&quot; and &quot;DyAcl&quot; I was unable to provide data
+                on execution time over large amount of rules but I've tested these two libraries
+                for a small amount of data and same rules which you can find in
+                <a href="https://github.com/ghost098/DyACL">DyACL</a> repo and
+                <a href="https://github.com/ghost098/ZendAclTest">ZendAclTest</a> repo and
+                what follows is average execution time of pdosample file in Dyacl repo and
+                zend_sample in ZandAclTest repo, taken from <b>Xdebug Profiler</b>:
+                <table class="">
+                    <tr>
+                        <td>library</td>
+                        <td>Time (ms)</td>
+                    </tr>
+                    <tr>
+                        <td>DyACL</td>
+                        <td>~79.3</td>
+                    </tr>
+                    <tr>
+                        <td>Zend Permission ACL</td>
+                        <td>~120.3</td>
+                    </tr>
+                </table>
+            </li>
+            <br>
+        </ol>
+
+
     </div>
     <div class="box">
         <div class="h3"><a name="others">Other Stuff</a></div>
-        I will provide plugins for different php frameworks ASAP. You can clone this library
-        <a href="">here</a>. Also you can download this library in zip format from
-        <a href="">here</a>.
+        <b>I will provide plugins for known php frameworks (Symphony2, CodeIgniter, Lithium,
+            Silex, etc) ASAP.</b><br> You can clone this library
+        <a href="https://github.com/ghost098/DyACL.git">here</a>. Also you can download this library in zip format from
+        <a href="https://github.com/ghost098/DyACL/archive/master.zip">here</a>.
         <br>
         <br>
         Finally, if you enjoyed this library go on and support it by starring it on github.
