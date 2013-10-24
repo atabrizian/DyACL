@@ -82,10 +82,10 @@ class DyAclPDO extends DyAcl
     {
         $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_RESOURCES."` WHERE `name` = :name;");
         if($ph->execute(array(':name' => $resourceName))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 'cnt');
+            $cnt = $ph->fetch(PDO::FETCH_ASSOC);
             $ph->closeCursor();
 
-            if($cnt == 0) {
+            if($cnt['cnt'] == 0) {
                 $ph = $this->pdo->prepare("Insert Into `".self::DB_RESOURCES."` (name) VALUES (:name)");
                 if($ph->execute(array(':name' => $resourceName))) {
                     $this->addResource($resourceName);
@@ -108,10 +108,10 @@ class DyAclPDO extends DyAcl
     {
         $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_USER_ROLES."` WHERE `user_id` = :user_id and `role_id` = :role_id;");
         if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 'cnt');
+            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN);
             $ph->closeCursor();
 
-            if($cnt == 0) {
+            if($cnt['cnt'] == 0) {
                 $ph = $this->pdo->prepare("Insert Into `".self::DB_RESOURCES."` (user_id, role_id) VALUES (:user_id, :role_id)");
                 if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
                     return true;
@@ -131,12 +131,12 @@ class DyAclPDO extends DyAcl
 
     public function addRuleToDB($roleId, $resourceId, $action, $privilege = DyAcl::ALLOW)
     {
-        $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` = :role_id and `resource` = :resource and `action` = :action `privilege` = :privilege;");
+        $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` = :role_id and `resource` = :resource and `action` = :action and `privilege` = :privilege;");
         if($ph->execute(array(':role_id' => $roleId, ':resource' => $resourceId, ':action' => $action, ':privilege' => $privilege))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 'cnt');
+            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN);
             $ph->closeCursor();
 
-            if($cnt == 0) {
+            if($cnt['cnt'] == 0) {
                 $ph = $this->pdo->prepare("Insert Into `".self::DB_ROLES_RESOURCES."` (role_id, resource, action, privilege) VALUES (:role_id, :resource, :action, :privilege)");
                 if($ph->execute(array(':role_id' => $roleId, ':resource' => $resourceId, ':action' => $action, ':privilege'=> $privilege))) {
                     return true;
@@ -146,11 +146,11 @@ class DyAclPDO extends DyAcl
                 }
             }
             else {
-                throw new \Exception("Resource already exists!");
+                throw new \Exception("Rule already exists!");
             }
         }
         else {
-            throw new \Exception("Resource selection failed!");
+            throw new \Exception("Rule selection failed!");
         }
     }
 
