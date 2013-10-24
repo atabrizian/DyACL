@@ -89,7 +89,7 @@ class DyAclPDO extends DyAcl
                 $ph = $this->pdo->prepare("Insert Into `".self::DB_RESOURCES."` (name) VALUES (:name)");
                 if($ph->execute(array(':name' => $resourceName))) {
                     $this->addResource($resourceName);
-                    return true;
+                    return $this->pdo->lastInsertId();
                 }
                 else {
                     return false;
@@ -108,17 +108,24 @@ class DyAclPDO extends DyAcl
     {
         $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_USER_ROLES."` WHERE `user_id` = :user_id and `role_id` = :role_id;");
         if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN);
-            $ph->closeCursor();
+            $cnt = $ph->fetch(PDO::FETCH_ASSOC);
+//            $ph->closeCursor();
 
             if($cnt['cnt'] == 0) {
-                $ph = $this->pdo->prepare("Insert Into `".self::DB_RESOURCES."` (user_id, role_id) VALUES (:user_id, :role_id)");
-                if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
-                    return true;
+                try {
+                    $ph = $this->pdo->prepare("Insert Into `".self::DB_USER_ROLES."` (user_id, role_id) VALUES (:user_id, :role_id)");
+                    if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
                 }
-                else {
-                    return false;
+                catch (\Exception $e)
+                {
+                    throw new \Exception($e->getMessage(), $e->getCode());
                 }
+
             }
             else {
                 throw new \Exception("Role already exists!");
@@ -133,13 +140,13 @@ class DyAclPDO extends DyAcl
     {
         $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` = :role_id and `resource` = :resource and `action` = :action and `privilege` = :privilege;");
         if($ph->execute(array(':role_id' => $roleId, ':resource' => $resourceId, ':action' => $action, ':privilege' => $privilege))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN);
+            $cnt = $ph->fetch(PDO::FETCH_ASSOC);
             $ph->closeCursor();
 
             if($cnt['cnt'] == 0) {
                 $ph = $this->pdo->prepare("Insert Into `".self::DB_ROLES_RESOURCES."` (role_id, resource, action, privilege) VALUES (:role_id, :resource, :action, :privilege)");
                 if($ph->execute(array(':role_id' => $roleId, ':resource' => $resourceId, ':action' => $action, ':privilege'=> $privilege))) {
-                    return true;
+                    return $this->pdo->lastInsertId();
                 }
                 else {
                     return false;
@@ -154,10 +161,10 @@ class DyAclPDO extends DyAcl
         }
     }
 
-    public function removeResourceFromDB($name)
+    public function removeResourceFromDB($id)
     {
-        $ph = $this->pdo->prepare("DELETE FROM `".self::DB_USER_ROLES."` WHERE `name` = :name");
-        if($ph->execute(array(':name' => $name))) {
+        $ph = $this->pdo->prepare("DELETE FROM `".self::DB_RESOURCES."` WHERE `id` = :id");
+        if($ph->execute(array(':id' => $id))) {
             return true;
         }
         else {
