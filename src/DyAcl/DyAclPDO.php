@@ -48,23 +48,20 @@ class DyAclPDO extends DyAcl
             if($roles !== false) {
                 $this->setRoles($roles);
 
-                foreach($roles as $role) {
-                    $ph = $this->pdo->prepare("SELECT * FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` = :role_id");
-
-                    if($ph->execute(array(':role_id'=> $role))) {
-                        $rules = $ph->fetchAll(PDO::FETCH_ASSOC);
-                        $ph->closeCursor();
-
-                        if($rules !== false) {
-                            $this->setRules($rules);
-                        }
-                        else {
-                            throw new \Exception("Rule selection failed!");
-                        }
+                $ph = $this->pdo->prepare("SELECT * FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` IN('".implode("', '", $roles)."')");
+                if($ph->execute()) {
+                    $rules = $ph->fetchAll(PDO::FETCH_ASSOC);
+                    $ph->closeCursor();
+                    
+                    if($rules !== false) {
+                        $this->setRules($rules);
                     }
                     else {
                         throw new \Exception("Rule selection failed!");
                     }
+                }
+                else {
+                    throw new \Exception("Rule selection failed!");
                 }
 
                 return true;
