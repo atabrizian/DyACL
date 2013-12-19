@@ -29,7 +29,7 @@ namespace DyAcl;
  * This is a simple but handy ACL
  *
  * @package DyAcl
- * @author: Arash Tabriziyan <a.tabriziyan@gmail.com>
+ * @author  : Arash Tabriziyan <a.tabriziyan@gmail.com>
  */
 class DyAcl
 {
@@ -102,7 +102,7 @@ class DyAcl
      * Checks whether the resource is currently registered or not
      *
      * @param string $resource A resource which can be anything that we need to
-     * manage our users access to such as controller/method, file, directory, etc
+     *                         manage our users access to such as controller/method, file, directory, etc
      *
      * @return bool true if the resource is found and false on failure
      */
@@ -117,7 +117,7 @@ class DyAcl
      * when you set rules
      *
      * @param string $resource A resource which can be anything that we need to
-     * manage our users access to such as controller/method, file, directory, etc
+     *                         manage our users access to such as controller/method, file, directory, etc
      *
      * @return bool true on success, false on failure
      */
@@ -144,9 +144,9 @@ class DyAcl
      * Allow access to specific resource on all or specific action
      *
      * @param string $resource A resource which can be anything that we need to
-     * manage our users access to such as controller/method, file, directory, etc
-     * @param string $action Action will be set to 'all' by default but other
-     * possible actions are Create, Read, Update, Delete
+     *                         manage our users access to such as controller/method, file, directory, etc
+     * @param string $action   Action will be set to 'all' by default but other
+     *                         possible actions are Create, Read, Update, Delete
      */
     public function allow($resource, $action = self::ACTION_ALL)
     {
@@ -156,7 +156,7 @@ class DyAcl
     /**
      * Forces allow on a resource. and doesnot pay attention to current state
      *
-     * @param $resource
+     * @param             $resource
      * @param null|string $action
      */
     public function forceAllow($resource, $action = self::ACTION_ALL)
@@ -179,8 +179,8 @@ class DyAcl
      * allow is more powerful than deny and if you have previously allowed a resource, your
      * deny wont affect users permission, or you need to force den on it.
      *
-     * @param $resource A resource
-     * @param null|string $action One or all of possible actions
+     * @param             $resource A resource
+     * @param null|string $action   One or all of possible actions
      */
     public function forceDeny($resource, $action = self::ACTION_ALL)
     {
@@ -191,6 +191,7 @@ class DyAcl
      * Assign a new role to current user
      *
      * @param int|string $role The role of the user
+     *
      * @return bool true on success and false on repeated role
      */
     public function setRole($role)
@@ -206,6 +207,7 @@ class DyAcl
      * Assign new roles to current user
      *
      * @param array $roles An array of current users roles
+     *
      * @return bool
      */
     public function setRoles($roles)
@@ -221,6 +223,7 @@ class DyAcl
      * Check the role exists or not
      *
      * @param string $role A specific role
+     *
      * @return bool
      */
     public function hasRole($role)
@@ -243,11 +246,11 @@ class DyAcl
      * Just one importent thing is All access is denied by default so you do not need to
      * deny anything all other things are simple
      *
-     * @param string $resource A resource which can be anything that we need to
-     * manage our users access to such as controller/method, file, directory, etc
+     * @param string $resource  A resource which can be anything that we need to
+     *                          manage our users access to such as controller/method, file, directory, etc
      * @param string $privilege ALLOW and DENY are only possible values
-     * @param string $action Action will be set to 'all' by default but other
-     * possible actions are Create, Read, Update, Delete
+     * @param string $action    Action will be set to 'all' by default but other
+     *                          possible actions are Create, Read, Update, Delete
      */
     public function setRule($resource, $privilege, $action = self::ACTION_ALL)
     {
@@ -279,9 +282,9 @@ class DyAcl
     /**
      * Forces a rule on a resource
      *
-     * @param string $resource A resource
+     * @param string $resource  A resource
      * @param string $privilege ALLOW or DENY
-     * @param string $action One of create, read, update, delete or all
+     * @param string $action    One of create, read, update, delete or all
      */
     public function setForceRule($resource, $privilege, $action = self::ACTION_ALL)
     {
@@ -302,7 +305,7 @@ class DyAcl
      * Set batch rules
      *
      * @param array $rules An array of rules which should include resource, privilige and
-     * action for each rule
+     *                     action for each rule
      *
      * @return bool
      */
@@ -321,6 +324,7 @@ class DyAcl
      * Batch setForceRule
      *
      * @param array $rules
+     *
      * @return bool
      */
     public function setForceRules($rules)
@@ -346,9 +350,10 @@ class DyAcl
      * Whether the user is allowed to access the resource or not
      *
      * @param string $resource A resource which can be anything that we need to
-     * manage our users access to such as controller/method, file, directory, etc
-     * @param string $action Action will be set to 'all' by default but other
-     * possible actions are Create, Read, Update, Delete and any other action that
+     *                         manage our users access to such as controller/method, file, directory, etc
+     * @param string $action   Action will be set to 'all' by default but other
+     *                         possible actions are Create, Read, Update, Delete and any other action that
+     *
      * @return bool true if allowed and false if denied
      */
     public function isAllowed($resource, $action = self::ACTION_ALL)
@@ -384,6 +389,7 @@ class DyAcl
      *
      * @param string $A allow or deny
      * @param string $B allow or deny
+     *
      * @return string allow or deny
      */
     private function permissionOr($A, $B)

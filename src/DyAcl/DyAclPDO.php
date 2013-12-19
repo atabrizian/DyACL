@@ -23,171 +23,82 @@ namespace DyAcl;
 
 use PDO;
 
-class DyAclPDO extends DyAcl
+/**
+ * Class DyAclPDO
+ *
+ * @package DyAcl
+ */
+class DyAclPDO extends DyAclToDb
 {
-    const DB_USER_ROLES = 'users_roles';
-    const DB_ROLES_RESOURCES = 'roles_resources';
-    const DB_RESOURCES = 'resources';
-    const DB_ROLES = 'roles';
-
+    /**
+     * @var \PDO PDO object
+     */
     private $pdo;
 
-    public function __construct($dsn, $username, $password)//, $options = null)
+    /**
+     * Constructor
+     *
+     */
+    public function __construct($pdo, $configFile = null)
     {
-        $this->pdo = new PDO($dsn, $username, $password);//, $options);
+        parent::__construct($configFile);
+        $this->pdo = $pdo;
     }
 
-    public function prepareAcl($user_id)
+    /**
+     * Loads acl rules from database according to user_id
+     *
+     * @param int $userId User's id
+     *
+     * @throws \Exception
+     * @return bool
+     */
+    public function prepareAcl($userId)
     {
         $this->flush();
-        $ph = $this->pdo->prepare("SELECT `role_id` FROM `".self::DB_USER_ROLES."` WHERE `user_id` = :user_id;");
-        if($ph->execute(array(':user_id' => $user_id))) {
-            $roles = $ph->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN, 'role_id');
+        $ph = $this->pdo->prepare(
+            "SELECT `" . $this->usersRolesFkToRoles
+            . "` FROM `" . $this->usersRolesTblName
+            . "` WHERE `" . $this->usersRolesFkToUsers . "` = :user_id;"
+        );
+
+        if ($ph->execute(array(':user_id' => $userId))) {
+            $roles = $ph->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN);
             $ph->closeCursor();
 
-            if($roles !== false) {
+            if ($roles !== false) {
                 $this->setRoles($roles);
 
-                $ph = $this->pdo->prepare("SELECT * FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` IN('".implode("', '", $roles)."')");
-                if($ph->execute()) {
+                $ph = $this->pdo->prepare(
+                    "SELECT `" . $this->rulesFkToResources . "` as `resource`, `"
+                    . $this->rulesPrivilegeField . "` as `privilege`, `"
+                    . $this->rulesActionField . "` as `action` FROM `"
+                    . $this->rulesTblName . "` WHERE `"
+                    . $this->rulesFkToRoles . "` IN ('" . implode(
+                        "', '",
+                        $roles
+                    ) . "')"
+                );
+
+                if ($ph->execute()) {
                     $rules = $ph->fetchAll(PDO::FETCH_ASSOC);
                     $ph->closeCursor();
-                    
-                    if($rules !== false) {
+
+                    if ($rules !== false) {
                         $this->setRules($rules);
-                    }
-                    else {
+                    } else {
                         throw new \Exception("Rule selection failed!");
                     }
-                }
-                else {
+                } else {
                     throw new \Exception("Rule selection failed!");
                 }
 
                 return true;
-            }
-            else {
+            } else {
                 throw new \Exception("Role selection failed!");
             }
-        }
-        else {
+        } else {
             throw new \Exception("Role selection failed!");
-        }
-    }
-
-    public function addResourceToDB($resourceName)
-    {
-        $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_RESOURCES."` WHERE `name` = :name;");
-        if($ph->execute(array(':name' => $resourceName))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC);
-            $ph->closeCursor();
-
-            if($cnt['cnt'] == 0) {
-                $ph = $this->pdo->prepare("Insert Into `".self::DB_RESOURCES."` (name) VALUES (:name)");
-                if($ph->execute(array(':name' => $resourceName))) {
-                    $this->addResource($resourceName);
-                    return $this->pdo->lastInsertId();
-                }
-                else {
-                    return false;
-                }
-            }
-            else {
-                throw new \Exception("Resource already exists!");
-            }
-        }
-        else {
-            throw new \Exception("Resource selection failed!");
-        }
-    }
-
-    public function addUserRoleToDB($userId, $roleId)
-    {
-        $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_USER_ROLES."` WHERE `user_id` = :user_id and `role_id` = :role_id;");
-        if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC);
-//            $ph->closeCursor();
-
-            if($cnt['cnt'] == 0) {
-                try {
-                    $ph = $this->pdo->prepare("Insert Into `".self::DB_USER_ROLES."` (user_id, role_id) VALUES (:user_id, :role_id)");
-                    if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                }
-                catch (\Exception $e)
-                {
-                    throw new \Exception($e->getMessage(), $e->getCode());
-                }
-
-            }
-            else {
-                throw new \Exception("Role already exists!");
-            }
-        }
-        else {
-            throw new \Exception("Role selection failed!");
-        }
-    }
-
-    public function addRuleToDB($roleId, $resourceId, $action, $privilege = DyAcl::ALLOW)
-    {
-        $ph = $this->pdo->prepare("SELECT count(*) as `cnt` FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` = :role_id and `resource` = :resource and `action` = :action and `privilege` = :privilege;");
-        if($ph->execute(array(':role_id' => $roleId, ':resource' => $resourceId, ':action' => $action, ':privilege' => $privilege))) {
-            $cnt = $ph->fetch(PDO::FETCH_ASSOC);
-            $ph->closeCursor();
-
-            if($cnt['cnt'] == 0) {
-                $ph = $this->pdo->prepare("Insert Into `".self::DB_ROLES_RESOURCES."` (role_id, resource, action, privilege) VALUES (:role_id, :resource, :action, :privilege)");
-                if($ph->execute(array(':role_id' => $roleId, ':resource' => $resourceId, ':action' => $action, ':privilege'=> $privilege))) {
-                    return $this->pdo->lastInsertId();
-                }
-                else {
-                    return false;
-                }
-            }
-            else {
-                throw new \Exception("Rule already exists!");
-            }
-        }
-        else {
-            throw new \Exception("Rule selection failed!");
-        }
-    }
-
-    public function removeResourceFromDB($id)
-    {
-        $ph = $this->pdo->prepare("DELETE FROM `".self::DB_RESOURCES."` WHERE `id` = :id");
-        if($ph->execute(array(':id' => $id))) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    public function removeUserRoleFromDB($userId, $roleId)
-    {
-        $ph = $this->pdo->prepare("DELETE FROM `".self::DB_USER_ROLES."` WHERE `user_id` = :user_id AND `role_id` = :role_id");
-        if($ph->execute(array(':user_id' => $userId, ':role_id' => $roleId))) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    public function removeRuleFromDB($roleId, $resource, $action, $privilege)
-    {
-        $ph = $this->pdo->prepare("DELETE FROM `".self::DB_ROLES_RESOURCES."` WHERE `role_id` = :role_id AND `resource` = :resource AND `action` = :action AND `privilege` = :privilege");
-        if($ph->execute(array(':role_id' => $roleId, ':resource' => $resource, ':action' => $action, ':privilege' => $privilege))) {
-            return true;
-        }
-        else {
-            return false;
         }
     }
 }

@@ -88,12 +88,16 @@ $sampleUserId = 1;
 $dyAcl->prepareAcl($sampleUserId);
 
 echo "His roles are:<br>";
-echo '<pre>';print_r($dyAcl->getRoles());echo '</pre>';
+echo '<pre>';
+print_r($dyAcl->getRoles());
+echo '</pre>';
 
 echo '<br><hr><br>';
 
 echo "Associated Rules are:<br>";
-echo '<pre>';print_r($dyAcl->getRules());echo '</pre>';
+echo '<pre>';
+print_r($dyAcl->getRules());
+echo '</pre>';
 
 echo '<br><hr><br>';
 
@@ -159,12 +163,16 @@ $sampleUserId = 2;
 $dyAcl->prepareAcl($sampleUserId);
 
 echo "His roles are:<br>";
-echo '<pre>';print_r($dyAcl->getRoles());echo '</pre>';
+echo '<pre>';
+print_r($dyAcl->getRoles());
+echo '</pre>';
 
 echo '<br><hr><br>';
 
 echo "Associated Rules are:<br>";
-echo '<pre>';print_r($dyAcl->getRules());echo '</pre>';
+echo '<pre>';
+print_r($dyAcl->getRules());
+echo '</pre>';
 
 echo '<br><hr><br>';
 

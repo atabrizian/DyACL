@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <part name="dyacl">
+        <config name="usersRolesTblName">users_roles</config>
+        <config name="usersRolesFkToUsers">user_id</config>
+        <config name="usersRolesFkToRoles">role_id</config>
+        <config name="rulesTblName">roles_resources</config>
+        <config name="rulesFkToRoles">role_id</config>
+        <config name="rulesFkToResources">resource</config>
+        <config name="rulesPrivilegeField">privilege</config>
+        <config name="rulesActionField">action</config>
+    </part>
+</configuration>
