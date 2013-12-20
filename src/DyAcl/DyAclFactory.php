@@ -23,22 +23,12 @@ class DyAclFactory
      *
      * @param \PDO $pdo A pdo instance to work with
      *
+     * @param null|string $configFile Path to xml config file
+     *
      * @return DyAclPDO
      */
-    public static function newDyAclPDO($pdo)
+    public static function newDyAclPDO($pdo, $configFile = null)
     {
-        return new DyAclPDO($pdo);
-    }
-
-    /**
-     * An instance of DyAclCodeIgniter
-     *
-     * @param mixed $CI your codeigniters CI::get_instance()
-     *
-     * @return DyAclCodeIgniter
-     */
-    public static function newDyAclCI($CI)
-    {
-        return new DyAclCodeIgniter($CI);
+        return new DyAclPDO($pdo, $configFile);
     }
 }

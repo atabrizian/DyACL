@@ -66,7 +66,7 @@ class DyAclPDO extends DyAclToDb
             $roles = $ph->fetchAll(PDO::FETCH_ASSOC | PDO::FETCH_COLUMN);
             $ph->closeCursor();
 
-            if ($roles !== false) {
+            if ($roles) {
                 $this->setRoles($roles);
 
                 $ph = $this->pdo->prepare(
@@ -84,21 +84,23 @@ class DyAclPDO extends DyAclToDb
                     $rules = $ph->fetchAll(PDO::FETCH_ASSOC);
                     $ph->closeCursor();
 
-                    if ($rules !== false) {
+                    if ($rules) {
                         $this->setRules($rules);
-                    } else {
-                        throw new \Exception("Rule selection failed!");
                     }
+                    // eles no rule has been defined for this user's roles!!!
                 } else {
-                    throw new \Exception("Rule selection failed!");
+                    //if this happen it means your users_roles table is not in
+                    //correct format or your config is wrong
+                    throw new DyAclException("Something wrong with database or Config!");
                 }
 
                 return true;
-            } else {
-                throw new \Exception("Role selection failed!");
             }
+            // else this user has no roles so everything is denied
         } else {
-            throw new \Exception("Role selection failed!");
+            //if this happen it means your users_roles table is not in
+            //correct format or your config is wrong
+            throw new DyAclException("Something wrong with database or Config!");
         }
     }
 }

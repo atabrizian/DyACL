@@ -49,19 +49,26 @@ abstract class DyAclToDb extends DyAcl
      * @throws DyAclException
      * @return mixed
      */
-    public function setDbMap($configFile)
+    public function setDbMap($configFile = null)
     {
+        if (is_null($configFile)) {
+            $configFile = __DIR__ . "/../../config/dbConfig.xml";
+        }
+
         if (!is_readable($configFile)) {
             throw new DyAclException("Config file is not accessible");
         }
 
         $dom = new DOMDocument();
-        if (!$dom->load($configFile)) {
-            throw new DyAclException("Config file can not be loaded.");
+        try {
+            $dom->load($configFile);
+        } catch (\Exception $e) {
+            throw new DyAclException($e->getMessage(), $e->getCode());
         }
 
-        if ($dom->schemaValidate(__DIR__ . "/../../config/dbConfig.xsd")) {
-            try {
+
+        try {
+            if ($dom->schemaValidate(__DIR__ . "/../../config/dbConfig.xsd")) {
                 $xpath = new DOMXPath($dom);
                 $list = $xpath->query("//configuration/part[@name='dyacl']/config");
                 $configs = [];
@@ -72,18 +79,16 @@ abstract class DyAclToDb extends DyAcl
 
                 foreach ($this->requiredDbConfigs as $configKey) {
                     if (!in_array($configKey, array_keys($configs))) {
-                        throw new DyAclException("Invalid Key in database configuration" .
-                        " file.");
+                        throw new DyAclException($configKey . " was not set in config file.");
                     }
                     $this->{$configKey} = $configs[$configKey];
                 }
-            } catch (\Exception $e) {
-                throw new DyAclException($e->getMessage(), $e->getCode());
             }
-        } else {
-            throw new DyAclException("Config file is not in correct format. " .
-            "Please check dbConfig.xsd for correct format.");
+            //if validation fails it throughs an exception that will be caught and rethrown
+        } catch (\Exception $e) {
+            throw new DyAclException($e->getMessage(), $e->getCode());
         }
+
     }
 
     /**

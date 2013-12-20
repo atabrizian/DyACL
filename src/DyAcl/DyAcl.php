@@ -108,7 +108,7 @@ class DyAcl
      */
     public function hasResource($resource)
     {
-        return isset($this->resources[$resource]) ? true : false;
+        return is_array($this->resources) ? in_array($resource, $this->resources) : false;
     }
 
     /**
@@ -154,17 +154,6 @@ class DyAcl
     }
 
     /**
-     * Forces allow on a resource. and doesnot pay attention to current state
-     *
-     * @param             $resource
-     * @param null|string $action
-     */
-    public function forceAllow($resource, $action = self::ACTION_ALL)
-    {
-        $this->setForceRule($resource, $action, self::ALLOW);
-    }
-
-    /**
      * This is just to be used to revoke permission because every permission is denied by
      * default.
      */
@@ -191,16 +180,12 @@ class DyAcl
      * Assign a new role to current user
      *
      * @param int|string $role The role of the user
-     *
-     * @return bool true on success and false on repeated role
      */
     public function setRole($role)
     {
-        if (!isset($this->role[$role])) {
+        if (!$this->hasRole($role)) {
             $this->roles[] = $role;
-            return true;
         }
-        return false;
     }
 
     /**
@@ -210,7 +195,7 @@ class DyAcl
      *
      * @return bool
      */
-    public function setRoles($roles)
+    public function setRoles(array $roles)
     {
         if (is_array($roles)) {
             foreach ($roles as $role) {
@@ -228,7 +213,7 @@ class DyAcl
      */
     public function hasRole($role)
     {
-        return (isset($this->roles[$role])) ? true : false;
+        return is_array($this->roles) ? in_array($role, $this->roles) : false;
     }
 
     /**
@@ -306,33 +291,23 @@ class DyAcl
      *
      * @param array $rules An array of rules which should include resource, privilige and
      *                     action for each rule
-     *
-     * @return bool
      */
-    public function setRules($rules)
+    public function setRules(array $rules)
     {
-        if (is_array($rules)) {
-            foreach ($rules as $rule) {
-                $this->setRule($rule['resource'], $rule['privilege'], $rule['action']);
-            }
-            return true;
+        foreach ($rules as $rule) {
+            $this->setRule($rule['resource'], $rule['privilege'], $rule['action']);
         }
-        return false;
     }
 
     /**
      * Batch setForceRule
      *
-     * @param array $rules
-     *
-     * @return bool
+     * @param array $rules Rules
      */
-    public function setForceRules($rules)
+    public function setForceRules(array $rules)
     {
-        if (is_array($rules)) {
-            foreach ($rules as $rule) {
-                $this->setForceRule($rule['resource'], $rule['privilege'], $rule['action']);
-            }
+        foreach ($rules as $rule) {
+            $this->setForceRule($rule['resource'], $rule['privilege'], $rule['action']);
         }
     }
 
@@ -375,12 +350,9 @@ class DyAcl
 
     public function deleteRole($role)
     {
-        $temp = $this->roles;
-        $this->roles = array();
-        foreach ($temp as $tmpRole) {
-            if ($tmpRole != $role) {
-                $this->roles[] = $tmpRole;
-            }
+        if ($this->hasRole($role)) {
+            $key = array_search($role, $this->roles);
+            unset($this->roles[$key]);
         }
     }
 
