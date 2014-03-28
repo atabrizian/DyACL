@@ -81,15 +81,17 @@
         dynamic (Database Driven) ACL which was the main purpose of this library's
         creation.
         <br>
+        <strong>Idea is, order of loading different rules - especially when they are loaded from database, e.g.
+            user is allowed to change permissions - should not change the final calculated permission of a user.
+        </strong>
         <br>
         But at first place why to invent the wheel again?! The answer is, there was a
         project of mine that needed ACL for managing access to different Files and Folders,
         which meant there will be lots of Rules that should be loaded from database. One
         of my friends suggested "Zend Permission Acl". I downloaded zend acl and
-        went through its documentation, but it seemed vague to me and I was in shortage of
-        time, so I decided to write an ACL library myself and after some improvements I
-        believe its better than "Zend Permission ACL"! So here is my library. I will shed
-        some light on "Why this library is better than Zend ACL" later on.
+        went through its documentation, but it seemed vague, I was in shortage of time, and <b>biggest probelm</b>
+        was order of loading different rules form databese would result in different final permission
+        of a user! So here is my library. I will shed some light on "Why to use DyAcl instead of Zend ACL" later on.
         <br>
         <br>
         If you're curious why I named it &quot;DyAcl&quot;, I should say it's abbreviation of
@@ -100,6 +102,8 @@
         <b>Remember</b> that this library does need just an array of anything so you're
         not forced to use database. I've also provided a class that
         extends from DyAcl and Uses "PDO" to load data from database.
+        <br>
+        If you need both or for the sake of change management, you'd better use the factory class.
     </div>
 </div>
 <div class="box" id="definitions">
@@ -239,6 +243,16 @@
 
     $dyAcl->isAllowed('secret');
 </pre>
+        <br>
+        Instead of directly constructing DyAcl class it's better to use it's factory.
+        <br><br>
+<pre>
+    $dyAcl = DyAclFactory::newAcl();
+
+    or
+
+    $dyAcl = DyAclFactory::newDyAclPDO($pdo, $configFile = null)
+</pre>
     </div>
 </div>
 <div class="box" id="sample">
@@ -291,31 +305,6 @@
             In &quot;DyAcl&quot; allow is more powerful, and by default everything
             is denied, so you just need to allow access to specific resources and order of rules
             does not matter anymore.
-            <br>
-        </li>
-        <li>Execution time<br><br>Because of differences in rule definition context between
-            &quot;Zend Permission ACL&quot; and &quot;DyAcl&quot; I was unable to provide data
-            on execution time over large amount of rules but I've tested these two libraries
-            for a small amount of data and same rules which you can find in
-            <a href="https://github.com/ghost098/DyACL">DyACL</a> repo and
-            <a href="https://github.com/ghost098/ZendAclTest">ZendAclTest</a> repo and
-            what follows is average execution time of pdosample file in Dyacl repo and
-            zend_<br><br>sample in ZandAclTest repo, taken from <b>Xdebug Profiler</b>:
-            <br><br>
-            <table class="table table-striped" style="width: 400px;">
-                <tr>
-                    <td>library</td>
-                    <td>Time (ms)</td>
-                </tr>
-                <tr class="success">
-                    <td>DyACL</td>
-                    <td>~79.3</td>
-                </tr>
-                <tr class="danger">
-                    <td>Zend Permission ACL</td>
-                    <td>~120.3</td>
-                </tr>
-            </table>
             <br>
         </li>
     </ol>
